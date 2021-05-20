@@ -39,12 +39,17 @@ public class SpoonMB : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        HoneyPouringPosition = new Vector3(0, 1, -0.74f);
+        HoneyPouringPosition = new Vector3(0, -1, -0.74f);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (honeyLevelScaleValue >= 1.0f)
+        {
+            JoyStickMouseMB.Instance.isActive = false;
+            JoystickMB.Instance.isActive = false;
+        }
         HoneyLevelTransform.localScale = HoneyLevelScale;
     }
 
@@ -52,11 +57,11 @@ public class SpoonMB : MonoBehaviour
     public IEnumerator PourHoneyToJarCoroutine()
     {
         Vector3 jarLevelScale = JarLevelTransform.localScale;
-        jarLevelScale.z += (honeyLevelScaleValue / 2.0f);
+        jarLevelScale.z += (honeyLevelScaleValue / HoneyGenerationMB.Instance.TotalHoney);
         Vector3 newRotation;
-        while ((transform.position - HoneyPouringPosition).magnitude > 0.5)
+        while ((transform.position - HoneyPouringPosition).magnitude > 0.1)
         {
-            transform.position = Vector3.Lerp(transform.position, HoneyPouringPosition, Time.deltaTime * 4);
+            transform.position = Vector3.Lerp(transform.position, HoneyPouringPosition, Time.deltaTime * 0.5f);
             yield return null;
         }
         HoneyPourParticleSystem.Play();

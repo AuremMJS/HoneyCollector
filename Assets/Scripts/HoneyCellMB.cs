@@ -30,24 +30,30 @@ public class HoneyCellMB : MonoBehaviour
     void Start()
     {
         HoneyFlowParticleSystem = transform.GetComponentInChildren<ParticleSystem>();
+        HoneyFlowParticleSystem.gameObject.SetActive(false);
         HoneyLevelMaskTransform = transform.GetComponentInChildren<SpriteMask>().transform;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Debug.Log(HoneyLevelMaskPos);
         HoneyLevelMaskTransform.localPosition = HoneyLevelMaskPos;
     }
 
     void OnCollisionEnter(Collision collsion)
     {
-        float spoonPositionY = collsion.transform.position.y + +collsion.transform.localScale.y / 2.0f;
+        float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y;
         float honeyLevelY = HoneyLevelMaskTransform.position.y;
-        Debug.Log("Spoon Position : "+collsion.transform.position);
-        Debug.Log("Sprite Mask Position : " + HoneyLevelMaskTransform.position);
+        if (SpoonMB.Instance.honeyLevelScaleValue < 1.0f && spoonPositionY <= honeyLevelY && HoneyQuantityInCell > 0.0f)
+        {
+            Debug.Log(gameObject.name);
+            HoneyQuantityInCell -= 0.1f * Time.deltaTime;
+            HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
+            SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
+        }
         if (collsion.collider.CompareTag("Spoon") && spoonPositionY <= honeyLevelY && SpoonMB.Instance.honeyLevelScaleValue < 1.0f && HoneyQuantityInCell > 0.0f)
         {
+            HoneyFlowParticleSystem.gameObject.SetActive(true);
             HoneyFlowParticleSystem.Play();
         }
     }
@@ -57,19 +63,21 @@ public class HoneyCellMB : MonoBehaviour
 
         if (collsion.collider.CompareTag("Spoon"))
         {
-            float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y / 2.0f;
+            float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y;
             float honeyLevelY = HoneyLevelMaskTransform.position.y;
-            Debug.Log("Spoon Position : " + collsion.transform.position);
-            Debug.Log("Sprite Mask Position : " + HoneyLevelMaskTransform.position);
+           
             if (SpoonMB.Instance.honeyLevelScaleValue < 1.0f && spoonPositionY <= honeyLevelY && HoneyQuantityInCell > 0.0f)
             {
                 HoneyQuantityInCell -= 0.1f * Time.deltaTime;
                 HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
                 SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
             }
-            if (HoneyFlowParticleSystem.isPlaying && (SpoonMB.Instance.honeyLevelScaleValue >= 1.0f || HoneyQuantityInCell <= 0.0f ||spoonPositionY>honeyLevelY))
+            if (HoneyFlowParticleSystem.isPlaying && (SpoonMB.Instance.honeyLevelScaleValue >= 1.0f || HoneyQuantityInCell <= 0.0f || spoonPositionY > honeyLevelY))
             {
                 HoneyFlowParticleSystem.Stop();
+                HoneyFlowParticleSystem.gameObject.SetActive(false);
+                if (HoneyQuantityInCell <= 0)
+                    HoneyLevelMaskTransform.transform.parent.gameObject.SetActive(false);
             }
         }
     }
@@ -78,7 +86,9 @@ public class HoneyCellMB : MonoBehaviour
     {
         if (collision.collider.CompareTag("Spoon"))
         {
+  
             HoneyFlowParticleSystem.Stop();
+            HoneyFlowParticleSystem.gameObject.SetActive(false);
         }
     }
 }

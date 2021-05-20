@@ -33,7 +33,7 @@ public class JoyStickMouseMB : MonoBehaviour
         isActive = true;
         JoystickCircle.SetActive(false);
         JoystickDot.SetActive(false);
-        moveSpeed = 2f;
+        moveSpeed = 1f;
         mouseMoved = false;
     }
 
@@ -41,13 +41,23 @@ public class JoyStickMouseMB : MonoBehaviour
     void Update()
     {
         if (!isActive)
+        {
+            Vector3 newPosition = transform.position;
+            newPosition.z = -0.74f;
+            transform.position = newPosition;
+            if (SpoonMB.Instance.honeyLevelScaleValue >= 1.0f)
+                DeactivateJoystick();
             return;
+        }
         if (Input.GetMouseButtonDown(0))
         {
-            ActivateJoystick();
-            startPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
+            touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
    Input.mousePosition.y, 12.52f));
-            startPosition.z = 0.0f;
+            touchPosition.z = 0.0f;
+
+            startPosition = touchPosition;
+
+            ActivateJoystick();
         }
 
         else if (Input.GetMouseButton(0))
@@ -56,8 +66,8 @@ public class JoyStickMouseMB : MonoBehaviour
             touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
  Input.mousePosition.y, 12.52f));
             touchPosition.z = 0.0f;
-            mouseMoved = (startPosition - touchPosition).sqrMagnitude > 1;
-
+            mouseMoved = (startPosition - touchPosition).sqrMagnitude > 5;
+            
             if (mouseMoved)
                 MoveSpoon();
             else
@@ -82,17 +92,21 @@ public class JoyStickMouseMB : MonoBehaviour
 
     void DeactivateJoystick()
     {
-            JoystickCircle.SetActive(false);
-            JoystickDot.SetActive(false);
-            isActive = false;
-            StartCoroutine(SpoonMB.Instance.PourHoneyToJarCoroutine());
-            mouseMoved = false;
+        Vector3 newPosition = transform.position;
+        newPosition.z = -0.74f;
+        transform.position = newPosition;
+        JoystickCircle.SetActive(false);
+        JoystickDot.SetActive(false);
+        isActive = false;
+        StopAllCoroutines();
+        StartCoroutine(SpoonMB.Instance.PourHoneyToJarCoroutine());
+        mouseMoved = false;
 
     }
     void MoveSpoon()
     {
         Vector3 newPosition = Vector3.Lerp(transform.position, transform.position + moveDirection * moveSpeed, Time.deltaTime);
-        newPosition.z = -0.44f;
+        newPosition.z = -0.39f;
         transform.position = newPosition;
 
         JoystickDot.transform.position = touchPosition;
@@ -107,6 +121,6 @@ public class JoyStickMouseMB : MonoBehaviour
             );
 
         moveDirection = (JoystickDot.transform.position - JoystickCircle.transform.position).normalized;
-        //SpoonRigidbody.velocity = moveDirection * moveSpeed;
+        
     }
 }
