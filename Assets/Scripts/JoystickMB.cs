@@ -8,30 +8,28 @@ public class JoystickMB : MonoBehaviour
 
     public bool isActive;
 
+    public float movementSpeed = 2f;
+
     public GameObject JoystickCircle, JoystickDot;
 
     private Rigidbody SpoonRigidbody;
-
-    private float moveSpeed;
-
+    
     private Touch oneTouch;
 
-    private Vector3 touchPosition;
+    public Vector3 touchPosition;
 
-    private Vector3 moveDirection;
+    public Vector3 moveDirection;
 
     void Awake()
     {
+        Debug.Assert(Instance == null, "Cannot create another instance of Singleton class");
         Instance = this;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        isActive = true;
-        JoystickCircle.SetActive(false);
-        JoystickDot.SetActive(false);
-        moveSpeed =2f;
+        Init();
     }
 
     // Update is called once per frame
@@ -49,29 +47,46 @@ public class JoystickMB : MonoBehaviour
         if (Input.touchCount > 0)
         {
             oneTouch = Input.GetTouch(0);
-            touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(oneTouch.position.x,
-   oneTouch.position.y, 12.52f));
-            touchPosition.z = 0.0f;
-            switch (oneTouch.phase)
-            {
-                case TouchPhase.Began:
-                    ActivateJoystick();
-                    break;
-
-                case TouchPhase.Moved:
-                    MoveSpoon();
-                    break;
-                case TouchPhase.Stationary:
-                    moveDirection = Vector3.zero;
-                    break;
-                case TouchPhase.Ended:
-                    DeactivateJoystick();
-                    break;
-            }
+            SetTouchPosition(oneTouch.position);
+            ProcessTouchPhase();
         }
     }
 
-    void ActivateJoystick()
+    public void Init()
+    {
+        isActive = true;
+        JoystickCircle.SetActive(false);
+        JoystickDot.SetActive(false);
+    }
+	
+    void ProcessTouchPhase()
+    {
+        switch (oneTouch.phase)
+        {
+            case TouchPhase.Began:
+                ActivateJoystick();
+                break;
+
+            case TouchPhase.Moved:
+                MoveSpoon();
+                break;
+            case TouchPhase.Stationary:
+                moveDirection = Vector3.zero;
+                break;
+            case TouchPhase.Ended:
+                DeactivateJoystick();
+                break;
+        }
+    }
+
+    public void SetTouchPosition(Vector3 position)
+    {
+        touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(position.x,
+ position.y, 12.52f));
+        touchPosition.z = 0.0f;
+    }
+
+    public void ActivateJoystick()
     {
         JoystickCircle.SetActive(true);
         JoystickDot.SetActive(true);
@@ -79,7 +94,7 @@ public class JoystickMB : MonoBehaviour
         JoystickDot.transform.position = touchPosition;
     }
 
-    void DeactivateJoystick()
+    public void DeactivateJoystick()
     {
         Vector3 newPosition = transform.position;
         newPosition.z = -0.74f;
@@ -91,14 +106,20 @@ public class JoystickMB : MonoBehaviour
         moveDirection = Vector3.zero;
     }
 
-    void MoveSpoon()
+    public void MoveSpoon()
     {
-        Vector3 newPosition = Vector3.Lerp(transform.position, transform.position + moveDirection * moveSpeed, Time.deltaTime);
+        Vector3 newPosition = Vector3.Lerp(transform.position, transform.position + moveDirection * movementSpeed, Time.deltaTime);
         newPosition.z = -0.39f;
         transform.position = newPosition;
 
         JoystickDot.transform.position = touchPosition;
+        ClampJoystickDotPosition();
 
+        moveDirection = (JoystickDot.transform.position - JoystickCircle.transform.position).normalized;
+    }
+
+    void ClampJoystickDotPosition()
+    {
         JoystickDot.transform.position = new Vector2(
             Mathf.Clamp(JoystickDot.transform.position.x,
             JoystickCircle.transform.position.x - 0.61f,
@@ -107,8 +128,6 @@ public class JoystickMB : MonoBehaviour
             JoystickCircle.transform.position.y - 0.61f,
             JoystickCircle.transform.position.y + 0.61f)
             );
-
-        moveDirection = (JoystickDot.transform.position - JoystickCircle.transform.position).normalized;
-        //SpoonRigidbody.velocity = moveDirection * moveSpeed;
     }
+
 }

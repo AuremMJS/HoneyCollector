@@ -3,38 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class HoneyGenerationMB : MonoBehaviour
-{
-    public static HoneyGenerationMB Instance;
-    public float TotalHoney;
+{   
     HoneyCellMB[] honeyCells;
-
-    void Awake()
-    {
-        Instance = this;
-    }
 
     // Start is called before the first frame update
     void Start()
     {
-        TotalHoney = 0;
+        GameManagerMB.Instance.TotalHoney = 0;
         honeyCells = transform.GetComponentsInChildren<HoneyCellMB>();
+        SetHoneyQuantityToCells();
+    }
+
+    void SetHoneyQuantityToCells()
+    {
         for (int i = 0; i < honeyCells.Length; i++)
         {
-            honeyCells[i].HoneyQuantityInCell = Random.Range(0f, 1);
-            if(honeyCells[i].HoneyQuantityInCell < 0.05f)
-            {
-                honeyCells[i].HoneyQuantityInCell = 1.0f;
-                honeyCells[i].HoneyLevelSprite.color = Color.red;
-                honeyCells[i].HasBee = true;
-                continue;
-            }
-            TotalHoney += honeyCells[i].HoneyQuantityInCell;
+            SetHoneyQuantityToCell(honeyCells[i]);
+            if (!honeyCells[i].HasBee)
+                GameManagerMB.Instance.TotalHoney += honeyCells[i].HoneyQuantityInCell;
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    void SetHoneyQuantityToCell(HoneyCellMB honeyCell)
     {
-        
+        honeyCell.HoneyQuantityInCell = Random.Range(0f, 1);
+        if (honeyCell.HoneyQuantityInCell < 0.05f)
+        {
+            honeyCell.HoneyQuantityInCell = 1.0f;
+            honeyCell.HoneyLevelSprite.color = Color.red;
+            honeyCell.HasBee = true;
+        }
     }
 }

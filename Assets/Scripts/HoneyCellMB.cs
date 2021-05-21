@@ -35,11 +35,7 @@ public class HoneyCellMB : MonoBehaviour
         HoneyLevelSprite = transform.GetComponentInChildren<SpriteRenderer>();
 
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
+  
     // Update is called once per frame
     void Update()
     {
@@ -51,25 +47,13 @@ public class HoneyCellMB : MonoBehaviour
         float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y * HoneyQuantityInCell;
         float honeyLevelY = HoneyLevelMaskTransform.position.y;
         
-
         if (collsion.collider.CompareTag("Spoon"))
         {
             if (HasBee)
             {
-                GameManagerMB.Instance.GameOverMessageText.text = "Bee Bite!!! Game Over!!! ";
-                GameManagerMB.Instance.GameOver();
+                GameManagerMB.Instance.SetGameOverTextAndGameOver("Bee Bite!!! Game Over!!!");
             }
-            if (spoonPositionY <= honeyLevelY && SpoonMB.Instance.honeyLevelScaleValue < 1.0f && HoneyQuantityInCell > 0.0f)
-            {
-                HoneyQuantityInCell -= 0.1f * Time.deltaTime;
-                HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
-                SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
-                if (spoonPositionY <= honeyLevelY)
-                {
-                    HoneyFlowParticleSystem.gameObject.SetActive(true);
-                    HoneyFlowParticleSystem.Play();
-                }
-            }
+            CheckAndTransferHoneyToSpoon(collsion);
         }
     }
 
@@ -78,25 +62,9 @@ public class HoneyCellMB : MonoBehaviour
 
         if (collsion.collider.CompareTag("Spoon"))
         {
-            float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y * HoneyQuantityInCell;
-            float honeyLevelY = HoneyLevelMaskTransform.position.y;
-      
-            if (SpoonMB.Instance.honeyLevelScaleValue < 1.0f && spoonPositionY <= honeyLevelY && HoneyQuantityInCell > 0.0f)
+            if(!CheckAndTransferHoneyToSpoon(collsion))
             {
-                if (!HoneyFlowParticleSystem.isPlaying)
-                {
-                    HoneyFlowParticleSystem.gameObject.SetActive(true);
-                    HoneyFlowParticleSystem.Play();
-                }
-                Debug.Log("Collision Stay :"+gameObject.name);
-                HoneyQuantityInCell -= 0.1f * Time.deltaTime;
-                HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
-                SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
-            }
-            if (HoneyFlowParticleSystem.isPlaying && (SpoonMB.Instance.honeyLevelScaleValue >= 1.0f || HoneyQuantityInCell <= 0.0f || spoonPositionY > honeyLevelY))
-            {
-                HoneyFlowParticleSystem.Stop();
-                HoneyFlowParticleSystem.gameObject.SetActive(false);
+                StopAndDeactivateHoneyFlow();
                 if (HoneyQuantityInCell <= 0)
                     HoneyLevelMaskTransform.transform.parent.gameObject.SetActive(false);
             }
@@ -107,7 +75,49 @@ public class HoneyCellMB : MonoBehaviour
     {
         if (collision.collider.CompareTag("Spoon"))
         {
+            StopAndDeactivateHoneyFlow();
+        }
+    }
 
+    bool CanHoneyFlow(Collision collsion)
+    {
+        float spoonPositionY = collsion.transform.position.y + collsion.transform.localScale.y * HoneyQuantityInCell;
+        float honeyLevelY = HoneyLevelMaskTransform.position.y;
+        return SpoonMB.Instance.honeyLevelScaleValue < 1.0f &&
+            spoonPositionY <= honeyLevelY &&
+            HoneyQuantityInCell > 0.0f;
+    }
+
+    bool CheckAndTransferHoneyToSpoon(Collision collsion)
+    {
+        if (CanHoneyFlow(collsion))
+        {
+            TransferHoneyToSpoon();
+            ActivateAndPlayHoneyFlow();
+            return true;
+        }
+        return false;
+    }
+    void TransferHoneyToSpoon()
+    {
+        HoneyQuantityInCell -= 0.1f * Time.deltaTime;
+        HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
+        SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
+    }
+
+    void ActivateAndPlayHoneyFlow()
+    {
+        if (!HoneyFlowParticleSystem.isPlaying)
+        {
+            HoneyFlowParticleSystem.gameObject.SetActive(true);
+            HoneyFlowParticleSystem.Play();
+        }
+    }
+
+    void StopAndDeactivateHoneyFlow()
+    {
+        if (HoneyFlowParticleSystem.isPlaying)
+        {
             HoneyFlowParticleSystem.Stop();
             HoneyFlowParticleSystem.gameObject.SetActive(false);
         }

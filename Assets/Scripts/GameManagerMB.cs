@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class GameManagerMB : MonoBehaviour
 {
     public static GameManagerMB Instance;
+
+    public float TotalHoney;
     public Image PauseImage;
     public Sprite PauseSprite, PlaySprite;
     public Slider SpoonHoneyLevelSlider, JarHoneyLevelSlider;
@@ -15,6 +17,7 @@ public class GameManagerMB : MonoBehaviour
 
     void Awake()
     {
+        Debug.Assert(Instance == null, "Cannot create another instance of Singleton class");
         Instance = this;
     }
 
@@ -31,8 +34,7 @@ public class GameManagerMB : MonoBehaviour
         JarHoneyLevelSlider.value = SpoonMB.Instance.JarLevelTransform.localScale.z;
         if (JarHoneyLevelSlider.value == 1)
         {
-            GameOverMessageText.text = "Congratulations!";
-            GameOver();
+            SetGameOverTextAndGameOver("Congratulations!");
         }
     }
 
@@ -57,8 +59,12 @@ public class GameManagerMB : MonoBehaviour
         PauseImage.sprite = PauseSprite;
         isGamePaused = false;
     }
-
-    public void GameOver()
+    public void SetGameOverTextAndGameOver(string text)
+    {
+        GameOverMessageText.text = text;
+        GameOver();
+    }
+    void GameOver()
     {
         GameOverMessageText.enabled = true;
         Time.timeScale = 0;

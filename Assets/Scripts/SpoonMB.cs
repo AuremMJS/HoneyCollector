@@ -49,9 +49,7 @@ public class SpoonMB : MonoBehaviour
     {
         if (honeyLevelScaleValue >= 1.0f)
         {
-            JoyStickMouseMB.Instance.isActive = false;
             JoystickMB.Instance.isActive = false;
-            
         }
         HoneyLevelTransform.localScale = HoneyLevelScale;
     }
@@ -62,7 +60,6 @@ public class SpoonMB : MonoBehaviour
             return;
         if (honeyLevelScaleValue <= 0)
         {
-            JoyStickMouseMB.Instance.isActive = true;
             JoystickMB.Instance.isActive = true;
             return;
         }
@@ -75,16 +72,39 @@ public class SpoonMB : MonoBehaviour
 
     public IEnumerator PourHoneyToJarCoroutine(float startTime, Vector3 startPosition)
     {
-        Vector3 jarLevelScale = JarLevelTransform.localScale;
-        jarLevelScale.z += (honeyLevelScaleValue / HoneyGenerationMB.Instance.TotalHoney);
-        Vector3 newRotation;
+        foreach (var item in MoveSpoonToHoneyPourPosition(startTime, startPosition))
+        {
+            yield return item;
+        }
+        
+        foreach(var item in RotateSpoonAndPourHoney())
+        {
+            yield return item;
+        }
+        
+        foreach(var item in RotateSpoonToOriginalRotation())
+        {
+            yield return item;
+        }
+        ResetHoneyPourCoroutine();
+        yield return null;
+    }
 
-        while (Time.time - startTime < 3.0f) 
+    IEnumerable MoveSpoonToHoneyPourPosition(float startTime, Vector3 startPosition)
+    {
+        while (Time.time - startTime < 3.0f)
         {
             float alpha = (Time.time - startTime) / 3.0f;
             transform.position = Vector3.Lerp(startPosition, HoneyPouringPosition, alpha);
             yield return null;
         }
+    }
+
+    IEnumerable RotateSpoonAndPourHoney()
+    {
+        Vector3 jarLevelScale = JarLevelTransform.localScale;
+        jarLevelScale.z += (honeyLevelScaleValue / GameManagerMB.Instance.TotalHoney);
+        Vector3 newRotation;
         HoneyPourParticleSystem.Play();
         while (honeyLevelScaleValue > 0.0f)
         {
@@ -99,6 +119,11 @@ public class SpoonMB : MonoBehaviour
             yield return null;
         }
         HoneyPourParticleSystem.Stop();
+    }
+
+    IEnumerable RotateSpoonToOriginalRotation()
+    {
+        Vector3 newRotation;
         while (transform.eulerAngles.z - 360.0f < -16.4f)
         {
             newRotation = transform.eulerAngles;
@@ -106,13 +131,16 @@ public class SpoonMB : MonoBehaviour
             transform.eulerAngles = newRotation;
             yield return null;
         }
+    }
+
+    void ResetHoneyPourCoroutine()
+    {
+        Vector3 newRotation;
         newRotation = transform.eulerAngles;
         newRotation.z = -16.4f;
         transform.eulerAngles = newRotation;
         honeyLevelScaleValue = 0.0f;
-        JoyStickMouseMB.Instance.isActive = true;
         JoystickMB.Instance.isActive = true;
-        yield return null;
         isPouringHoneyToJar = false;
     }
 }
