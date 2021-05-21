@@ -1,25 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+// Class to Joystick implementation
 public class JoystickMB : MonoBehaviour
 {
+    // Singleton instance
     public static JoystickMB Instance;
 
+    // Is the joystick active
     public bool isActive;
 
+    // Speed of movement of spoon
     public float movementSpeed = 2f;
 
+    // Reference to circle and dot of the joystick
     public GameObject JoystickCircle, JoystickDot;
 
-    private Rigidbody SpoonRigidbody;
-    
+    // Reference to the touch
     private Touch oneTouch;
 
+    // Reference to the touch position
     public Vector3 touchPosition;
 
+    // Direction of movement of the spoon
     public Vector3 moveDirection;
 
+    // Singleton initialization in awake
     void Awake()
     {
         Debug.Assert(Instance == null, "Cannot create another instance of Singleton class");
@@ -37,21 +42,30 @@ public class JoystickMB : MonoBehaviour
     {
         if (!isActive)
         {
+            // Keep the spoon away from honey comb when joystick is not active
             Vector3 newPosition = transform.position;
             newPosition.z = -0.74f;
             transform.position = newPosition;
+
+            // Deactivate the joystick
             if (SpoonMB.Instance.honeyLevelScaleValue >= 1.0f)
                 DeactivateJoystick();
             return;
         }
+
+        // Touch detection
         if (Input.touchCount > 0)
         {
+            // Get touch and set touch position
             oneTouch = Input.GetTouch(0);
             SetTouchPosition(oneTouch.position);
+
+            // Process the touch
             ProcessTouchPhase();
         }
     }
 
+    // Init
     public void Init()
     {
         isActive = true;
@@ -59,6 +73,7 @@ public class JoystickMB : MonoBehaviour
         JoystickDot.SetActive(false);
     }
 	
+    // Process touch
     void ProcessTouchPhase()
     {
         switch (oneTouch.phase)
@@ -79,6 +94,7 @@ public class JoystickMB : MonoBehaviour
         }
     }
 
+    // Set touch position
     public void SetTouchPosition(Vector3 position)
     {
         touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(position.x,
@@ -86,6 +102,7 @@ public class JoystickMB : MonoBehaviour
         touchPosition.z = 0.0f;
     }
 
+    // Activate joystick
     public void ActivateJoystick()
     {
         JoystickCircle.SetActive(true);
@@ -94,6 +111,7 @@ public class JoystickMB : MonoBehaviour
         JoystickDot.transform.position = touchPosition;
     }
 
+    // Deactivate joystick
     public void DeactivateJoystick()
     {
         Vector3 newPosition = transform.position;
@@ -106,6 +124,7 @@ public class JoystickMB : MonoBehaviour
         moveDirection = Vector3.zero;
     }
 
+    // Move spoon based on joystick
     public void MoveSpoon()
     {
         Vector3 newPosition = Vector3.Lerp(transform.position, transform.position + moveDirection * movementSpeed, Time.deltaTime);
@@ -118,6 +137,7 @@ public class JoystickMB : MonoBehaviour
         moveDirection = (JoystickDot.transform.position - JoystickCircle.transform.position).normalized;
     }
 
+    // Clamp joystick dot position within circle
     void ClampJoystickDotPosition()
     {
         JoystickDot.transform.position = new Vector2(
@@ -129,5 +149,4 @@ public class JoystickMB : MonoBehaviour
             JoystickCircle.transform.position.y + 0.61f)
             );
     }
-
 }

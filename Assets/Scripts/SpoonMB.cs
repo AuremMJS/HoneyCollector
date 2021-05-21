@@ -1,14 +1,25 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+// Class to represent the spoon
 public class SpoonMB : MonoBehaviour
 {
+    // Singleton Instance
     public static SpoonMB Instance;
+
+    // Honey quantity in the spoon
     public float honeyLevelScaleValue;
+
+    // Particle system to pour honey from spoon to jar
     public ParticleSystem HoneyPourParticleSystem;
+
+    // Transform to indicate quantity of honey in the jar
     public Transform JarLevelTransform;
+
+    // Is honey being poured into the jar
     bool isPouringHoneyToJar;
+
+    // Scale value to represent the honey quantity in spoon
     Vector3 honeyLevelScale;
     Vector3 HoneyLevelScale
     {
@@ -29,8 +40,13 @@ public class SpoonMB : MonoBehaviour
         }
     }
 
-    public Transform HoneyLevelTransform;
+    // Transform indicating the honey quantity
+    Transform HoneyLevelTransform;
+
+    // Position from where honey is poured into the jar
     Vector3 HoneyPouringPosition;
+
+    // Singleton init is done in awake
     void Awake()
     {
         Debug.Assert(Instance == null, "Cannot create another instance of Singleton class");
@@ -47,22 +63,30 @@ public class SpoonMB : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // When the spoon is full, deactivate joystick
         if (honeyLevelScaleValue >= 1.0f)
         {
             JoystickMB.Instance.isActive = false;
         }
+
+        // Set honey quantity in spoon
         HoneyLevelTransform.localScale = HoneyLevelScale;
     }
 
+    // Pour honey into the jar
     public void PourHoneyToJar()
     {
         if (isPouringHoneyToJar)
             return;
+
+        // Activate joystick is there is no honey collected
         if (honeyLevelScaleValue <= 0)
         {
             JoystickMB.Instance.isActive = true;
             return;
         }
+
+        // Start coroutine to pour honey into jar
         isPouringHoneyToJar = true;
         float startTime = Time.time;
         Vector3 startPosition = transform.position;
@@ -70,26 +94,33 @@ public class SpoonMB : MonoBehaviour
         StartCoroutine(PourHoneyToJarCoroutine(startTime, startPosition));
     }
 
+    // Coroutine to pour honey into jar
     public IEnumerator PourHoneyToJarCoroutine(float startTime, Vector3 startPosition)
     {
+        // Move Spoon to honey pouring position
         foreach (var item in MoveSpoonToHoneyPourPosition(startTime, startPosition))
         {
             yield return item;
         }
         
+        // Pour honey into jar
         foreach(var item in RotateSpoonAndPourHoney())
         {
             yield return item;
         }
         
+        // Rotate spoon back to original position
         foreach(var item in RotateSpoonToOriginalRotation())
         {
             yield return item;
         }
+
+        // Reset the flags
         ResetHoneyPourCoroutine();
         yield return null;
     }
 
+    // Move Spoon to honey pouring position
     IEnumerable MoveSpoonToHoneyPourPosition(float startTime, Vector3 startPosition)
     {
         while (Time.time - startTime < 3.0f)
@@ -100,6 +131,7 @@ public class SpoonMB : MonoBehaviour
         }
     }
 
+    // Pour honey into jar
     IEnumerable RotateSpoonAndPourHoney()
     {
         Vector3 jarLevelScale = JarLevelTransform.localScale;
@@ -121,6 +153,7 @@ public class SpoonMB : MonoBehaviour
         HoneyPourParticleSystem.Stop();
     }
 
+    // Rotate spoon back to original position
     IEnumerable RotateSpoonToOriginalRotation()
     {
         Vector3 newRotation;
@@ -133,6 +166,7 @@ public class SpoonMB : MonoBehaviour
         }
     }
 
+    // Reset the flags
     void ResetHoneyPourCoroutine()
     {
         Vector3 newRotation;
