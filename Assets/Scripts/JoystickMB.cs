@@ -62,6 +62,7 @@ public class JoystickMB : MonoBehaviour
                     MoveSpoon();
                     break;
                 case TouchPhase.Stationary:
+                    moveDirection = Vector3.zero;
                     break;
                 case TouchPhase.Ended:
                     DeactivateJoystick();
@@ -86,8 +87,7 @@ public class JoystickMB : MonoBehaviour
         JoystickCircle.SetActive(false);
         JoystickDot.SetActive(false);
         isActive = false;
-        StopAllCoroutines();
-        StartCoroutine(SpoonMB.Instance.PourHoneyToJarCoroutine());
+        SpoonMB.Instance.PourHoneyToJar();
         moveDirection = Vector3.zero;
     }
 

@@ -62,7 +62,7 @@ public class JoyStickMouseMB : MonoBehaviour
 
         else if (Input.GetMouseButton(0))
         {
-           
+
             touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
  Input.mousePosition.y, 12.52f));
             touchPosition.z = 0.0f;
@@ -78,7 +78,7 @@ public class JoyStickMouseMB : MonoBehaviour
         }
         else if (Input.GetMouseButtonUp(0))
         {
-			DeactivateJoystick();
+            DeactivateJoystick();
         }
 
     }
@@ -98,8 +98,7 @@ public class JoyStickMouseMB : MonoBehaviour
         JoystickCircle.SetActive(false);
         JoystickDot.SetActive(false);
         isActive = false;
-        StopAllCoroutines();
-        StartCoroutine(SpoonMB.Instance.PourHoneyToJarCoroutine());
+        SpoonMB.Instance.PourHoneyToJar();
         mouseMoved = false;
 
     }

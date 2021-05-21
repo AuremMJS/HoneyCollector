@@ -18,10 +18,16 @@ public class HoneyGenerationMB : MonoBehaviour
     {
         TotalHoney = 0;
         honeyCells = transform.GetComponentsInChildren<HoneyCellMB>();
-        Debug.Log("No of cells: " + honeyCells.Length);
         for (int i = 0; i < honeyCells.Length; i++)
         {
-            honeyCells[i].HoneyQuantityInCell = Random.Range(0.1f, 1);
+            honeyCells[i].HoneyQuantityInCell = Random.Range(0f, 1);
+            if(honeyCells[i].HoneyQuantityInCell < 0.05f)
+            {
+                honeyCells[i].HoneyQuantityInCell = 1.0f;
+                honeyCells[i].HoneyLevelSprite.color = Color.red;
+                honeyCells[i].HasBee = true;
+                continue;
+            }
             TotalHoney += honeyCells[i].HoneyQuantityInCell;
         }
     }

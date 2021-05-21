@@ -8,6 +8,7 @@ public class SpoonMB : MonoBehaviour
     public float honeyLevelScaleValue;
     public ParticleSystem HoneyPourParticleSystem;
     public Transform JarLevelTransform;
+    bool isPouringHoneyToJar;
     Vector3 honeyLevelScale;
     Vector3 HoneyLevelScale
     {
@@ -39,6 +40,7 @@ public class SpoonMB : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        isPouringHoneyToJar = false;
         HoneyPouringPosition = new Vector3(0, -1, -0.74f);
     }
 
@@ -49,19 +51,38 @@ public class SpoonMB : MonoBehaviour
         {
             JoyStickMouseMB.Instance.isActive = false;
             JoystickMB.Instance.isActive = false;
+            
         }
         HoneyLevelTransform.localScale = HoneyLevelScale;
     }
 
+    public void PourHoneyToJar()
+    {
+        if (isPouringHoneyToJar)
+            return;
+        if (honeyLevelScaleValue <= 0)
+        {
+            JoyStickMouseMB.Instance.isActive = true;
+            JoystickMB.Instance.isActive = true;
+            return;
+        }
+        isPouringHoneyToJar = true;
+        float startTime = Time.time;
+        Vector3 startPosition = transform.position;
+        StopAllCoroutines();
+        StartCoroutine(PourHoneyToJarCoroutine(startTime, startPosition));
+    }
 
-    public IEnumerator PourHoneyToJarCoroutine()
+    public IEnumerator PourHoneyToJarCoroutine(float startTime, Vector3 startPosition)
     {
         Vector3 jarLevelScale = JarLevelTransform.localScale;
         jarLevelScale.z += (honeyLevelScaleValue / HoneyGenerationMB.Instance.TotalHoney);
         Vector3 newRotation;
-        while ((transform.position - HoneyPouringPosition).magnitude > 0.1)
+
+        while (Time.time - startTime < 3.0f) 
         {
-            transform.position = Vector3.Lerp(transform.position, HoneyPouringPosition, Time.deltaTime * 0.5f);
+            float alpha = (Time.time - startTime) / 3.0f;
+            transform.position = Vector3.Lerp(startPosition, HoneyPouringPosition, alpha);
             yield return null;
         }
         HoneyPourParticleSystem.Play();
@@ -73,7 +94,7 @@ public class SpoonMB : MonoBehaviour
             transform.eulerAngles = newRotation;
             honeyLevelScaleValue -= 0.4f * Time.deltaTime;
             JarLevelTransform.localScale = Vector3.Lerp(JarLevelTransform.localScale, jarLevelScale, Time.deltaTime);
-            if(honeyLevelScaleValue <= 0.2f)
+            if (honeyLevelScaleValue <= 0.2f)
                 HoneyPourParticleSystem.Stop();
             yield return null;
         }
@@ -92,5 +113,6 @@ public class SpoonMB : MonoBehaviour
         JoyStickMouseMB.Instance.isActive = true;
         JoystickMB.Instance.isActive = true;
         yield return null;
+        isPouringHoneyToJar = false;
     }
 }
