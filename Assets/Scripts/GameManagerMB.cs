@@ -11,6 +11,9 @@ public class GameManagerMB : MonoBehaviour
     // Total Honey in the comb
     public float TotalHoney;
 
+    // Percentage of Honey to win the game
+    public float HoneyToWin = 0.8f;
+
     // Reference to Pause Image UI
     public Image PauseImage;
 
@@ -44,10 +47,10 @@ public class GameManagerMB : MonoBehaviour
     {
         // Set the values of sliders
         SpoonHoneyLevelSlider.value = SpoonMB.Instance.honeyLevelScaleValue;
-        JarHoneyLevelSlider.value = SpoonMB.Instance.JarLevelTransform.localScale.z;
+        JarHoneyLevelSlider.value = SpoonMB.Instance.TotalHoneyInJar;
 
         // When the jar is completely filled, Show winner message
-        if (JarHoneyLevelSlider.value == 1)
+        if (JarHoneyLevelSlider.value > HoneyToWin)
         {
             SetGameOverTextAndGameOver("Congratulations!");
         }

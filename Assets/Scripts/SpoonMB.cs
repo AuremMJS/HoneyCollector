@@ -16,6 +16,15 @@ public class SpoonMB : MonoBehaviour
     // Transform to indicate quantity of honey in the jar
     public Transform JarLevelTransform;
 
+    // Maximum quantity of the honey, spoon can hold
+    public float SpoonCapacity = 1.0f;
+
+    // Time to move Spoon near jar
+    public float TimeToMoveSpoonToJar = 3.0f;
+
+    // Total Honey In Jar
+    public float TotalHoneyInJar = 0.0f;
+
     // Is honey being poured into the jar
     bool isPouringHoneyToJar;
 
@@ -41,7 +50,7 @@ public class SpoonMB : MonoBehaviour
     }
 
     // Transform indicating the honey quantity
-    Transform HoneyLevelTransform;
+    public Transform HoneyLevelTransform;
 
     // Position from where honey is poured into the jar
     Vector3 HoneyPouringPosition;
@@ -97,6 +106,7 @@ public class SpoonMB : MonoBehaviour
     // Coroutine to pour honey into jar
     public IEnumerator PourHoneyToJarCoroutine(float startTime, Vector3 startPosition)
     {
+        TotalHoneyInJar += (SpoonCapacity * honeyLevelScaleValue) / GameManagerMB.Instance.TotalHoney;
         // Move Spoon to honey pouring position
         foreach (var item in MoveSpoonToHoneyPourPosition(startTime, startPosition))
         {
@@ -123,9 +133,9 @@ public class SpoonMB : MonoBehaviour
     // Move Spoon to honey pouring position
     IEnumerable MoveSpoonToHoneyPourPosition(float startTime, Vector3 startPosition)
     {
-        while (Time.time - startTime < 3.0f)
+        while (Time.time - startTime < TimeToMoveSpoonToJar)
         {
-            float alpha = (Time.time - startTime) / 3.0f;
+            float alpha = (Time.time - startTime) / TimeToMoveSpoonToJar;
             transform.position = Vector3.Lerp(startPosition, HoneyPouringPosition, alpha);
             yield return null;
         }
@@ -134,6 +144,7 @@ public class SpoonMB : MonoBehaviour
     // Pour honey into jar
     IEnumerable RotateSpoonAndPourHoney()
     {
+       
         Vector3 jarLevelScale = JarLevelTransform.localScale;
         jarLevelScale.z += (honeyLevelScaleValue / GameManagerMB.Instance.TotalHoney);
         Vector3 newRotation;

@@ -126,7 +126,7 @@ public class HoneyCellMB : MonoBehaviour
     {
         HoneyQuantityInCell -= 0.1f * Time.deltaTime;
         HoneyQuantityInCell = HoneyQuantityInCell < 0.0f ? 0.0f : HoneyQuantityInCell;
-        SpoonMB.Instance.honeyLevelScaleValue += (0.1f * Time.deltaTime);
+        SpoonMB.Instance.honeyLevelScaleValue += (0.1f / SpoonMB.Instance.SpoonCapacity * Time.deltaTime);
     }
 
     // Activate the honey flow particle system
