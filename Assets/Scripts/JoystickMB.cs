@@ -35,6 +35,10 @@ public class JoystickMB : MonoBehaviour
     void Start()
     {
         Init();
+        if(Application.isEditor)
+        {
+            GetComponent<JoyStickMouseMB>().enabled = true;
+        }
     }
 
     // Update is called once per frame
